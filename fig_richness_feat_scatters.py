@@ -35,9 +35,6 @@ for dataset in all_datasets:
 
         plt.scatter(bio_divs, feat_vals, s=3, label=get_nice_feat_name(feat_type, cf_ix), color=lighten_color(color,1.4), alpha=0.3)
         plt.title('{}'.format(get_nice_dataset_short_name(dataset)))
-        #plt.xticks([])
-        #plt.yticks([])
-
 
         if ax_ix <= 2:
             plt.ylabel(get_nice_feat_name(feat_type, cf_ix))

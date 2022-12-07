@@ -1,26 +1,21 @@
 import os
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.stats import pearsonr
 from tqdm import tqdm
 from analysis_libs import get_aggregated_feats, pca_transform_feats, get_nice_dataset_name, get_nice_featureset_name
 from sklearn.metrics.pairwise import pairwise_distances
 from scipy.spatial.distance import squareform
-from sklearn.linear_model import QuantileRegressor
 from skbio.stats.distance import mantel
 
+# Method for pdist function to calculate distance between community richnesses
 def spec_rich_distance(vec1, vec2):
     return (np.sum(vec2) - np.sum(vec1))
 
-def sigmoid(x, L ,x0, k, b):
-    y = L / (1 + np.exp(-k*(x-x0))) + b
-    return (y)
 
 parsed_data_dir = 'parsed_pc_data'
 
 # n_pca_comps = None means don't do PCA
 n_pca_comps = None
-do_quant_regrs = False
 spec_richness = False
 
 # 'std' for standard deviation of feats, 'mean' for averages
@@ -49,7 +44,6 @@ for f_ix, f in enumerate(data_fs):
             if spec not in all_specs_comm_names:
                 all_specs_comm_names.append(spec)
     all_specs_comm_names = np.unique(np.asarray(all_specs_comm_names))
-    #tqdm.write('Loaded {} PCs, {} unique species'.format(len(all_pcs), len(all_specs_comm_names)))
 
     # Set up empty matrices for the audio features and the species matrix
     test_feats = all_pcs[0].audio_feats
@@ -101,28 +95,11 @@ for f_ix, f in enumerate(data_fs):
     mantel_coeff, mantel_p, mantel_n = mantel(squareform(spec_dists), squareform(aud_feat_dists), alternative='greater', method='spearman')
     print('{}: mantel coeff = {}, p = {}, n = {}'.format(pc_data_savef, mantel_coeff, mantel_p, mantel_n))
 
-    r, p = pearsonr(aud_feat_dists, spec_dists)
-    a, b = np.polyfit(aud_feat_dists, spec_dists, 1)
-    #print('{} r^2 = {}'.format(f, round(r**2, 3)))
-    #print('{} p = {}'.format(f, p))
-
     # Plot results
     plt.sca(axs[f_ix])
     ax = axs[f_ix]
     ax.hexbin(aud_feat_dists, spec_dists, bins='log', cmap='Greys')
     
-    if do_quant_regrs:
-        tqdm.write('Fitting and predicting quantile regressions')
-        subsamp_ixs = np.random.choice(range(len(aud_feat_dists)), 5000)
-        x_subsamp = aud_feat_dists[subsamp_ixs].reshape(-1, 1)
-        y_subsamp = spec_dists[subsamp_ixs]
-        spec_01_pred = QuantileRegressor(quantile=0.2, solver='highs', fit_intercept=True).fit(x_subsamp, y_subsamp).predict(aud_feat_dists.reshape(-1,1))
-        spec_09_pred = QuantileRegressor(quantile=0.8, solver='highs', fit_intercept=True).fit(x_subsamp, y_subsamp).predict(aud_feat_dists.reshape(-1,1))
-
-        ax.plot(aud_feat_dists, spec_01_pred, label='0.1 quantile', c='red')
-        ax.plot(aud_feat_dists, spec_09_pred, label='0.9 quantile', c='green')
-
-    #ax.set_title('{}\np = {}'.format(f, format(p, '.3g')))
     ax.set_title(get_nice_dataset_name(f))
 
 if spec_richness:

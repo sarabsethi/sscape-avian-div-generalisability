@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 from analysis_libs import get_nice_featureset_name
 from matplotlib.ticker import MaxNLocator
 
-
 all_feat_types = ['vggish', 'maad']
 all_feat_cols = ['blue', 'orange']
 all_feat_dims = [128, 60]
