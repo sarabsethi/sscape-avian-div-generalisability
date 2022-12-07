@@ -5,6 +5,7 @@ figures
 *.wav
 *.pickle
 *.npy
+*.zip
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

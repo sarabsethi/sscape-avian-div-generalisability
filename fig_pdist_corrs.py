@@ -110,20 +110,7 @@ for f_ix, f in enumerate(data_fs):
     plt.sca(axs[f_ix])
     ax = axs[f_ix]
     ax.hexbin(aud_feat_dists, spec_dists, bins='log', cmap='Greys')
-
-    '''
-    xdata = aud_feat_dists
-    ydata = spec_dists
-    p0 = [max(ydata), np.median(xdata),1,min(ydata)] # this is an mandatory initial guess
-    popt, pcov = curve_fit(sigmoid, xdata, ydata,p0, method='lm', maxfev=10000)
-    x = np.linspace(0, np.max(aud_feat_dists), 1000)
-    y = sigmoid(x, *popt)
-    plt.plot(x, y)
-    #plt.xscale('log')
-    '''
     
-    #ax.plot(aud_feat_dists, a*aud_feat_dists+b, c='blue')
-
     if do_quant_regrs:
         tqdm.write('Fitting and predicting quantile regressions')
         subsamp_ixs = np.random.choice(range(len(aud_feat_dists)), 5000)
@@ -138,7 +125,6 @@ for f_ix, f in enumerate(data_fs):
     #ax.set_title('{}\np = {}'.format(f, format(p, '.3g')))
     ax.set_title(get_nice_dataset_name(f))
 
-
 if spec_richness:
     fig.supylabel('Species richness distances', fontsize=14)
 else:
@@ -146,21 +132,11 @@ else:
 
 fig.supxlabel('Soundscape distances ({})'.format(get_nice_featureset_name(feat_type).lower()), fontsize=14)
 
-'''
-title = 'fig_pdist_corrs feat_mode={} '.format(feat_mode)
-if n_pca_comps:
-    title += 'n_pca_comps={}'.format(n_pca_comps)
-else:
-    title += '(no PCA)'
-plt.suptitle(title)
-'''
-
 plt.tight_layout()
 
 figs_dir = 'figures'
 if not os.path.exists(figs_dir):
     os.makedirs(figs_dir)
 plt.savefig(os.path.join(figs_dir,'fig_pdist_corrs.svg'))
-
 
 plt.show()

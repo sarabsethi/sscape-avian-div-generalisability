@@ -11,6 +11,7 @@ def get_nice_featureset_name(ugly_name):
 
     return ugly_name
 
+
 def get_nice_featureset_short_name(ugly_name):
     if ugly_name == 'vggish':
         return 'LFs'
@@ -18,15 +19,6 @@ def get_nice_featureset_short_name(ugly_name):
         return 'SSIs'
 
     return ugly_name
-
-
-def get_secs_per_audio_feat(feat_name):
-    target_secs_per_feat = feat_name.split('_')[-1].split('s')[0]
-    if target_secs_per_feat.startswith('0'): target_secs_per_feat = float(target_secs_per_feat)/100
-    else: target_secs_per_feat = float(target_secs_per_feat)
-
-    actual_secs_per_feat = 0.96 * int(target_secs_per_feat / 0.96)
-    return round(actual_secs_per_feat,2)
 
 
 def get_nice_dataset_name(ugly_name):
@@ -66,6 +58,15 @@ def lighten_color(color, amount=0.5):
     return colorsys.hls_to_rgb(c[0], max(0, min(1, amount * c[1])), c[2])
 
 
+def get_secs_per_audio_feat(feat_name):
+    target_secs_per_feat = feat_name.split('_')[-1].split('s')[0]
+    if target_secs_per_feat.startswith('0'): target_secs_per_feat = float(target_secs_per_feat)/100
+    else: target_secs_per_feat = float(target_secs_per_feat)
+
+    actual_secs_per_feat = 0.96 * int(target_secs_per_feat / 0.96)
+    return round(actual_secs_per_feat,2)
+
+
 def get_dataset_unq_specs(all_pcs):
     all_avi_specs = []
     for pc in all_pcs:
@@ -73,6 +74,7 @@ def get_dataset_unq_specs(all_pcs):
     
     unq_specs = np.unique(all_avi_specs)
     return unq_specs
+
 
 def get_biodivs_and_feats(all_pcs, feat_mode='mean'):
     aud_feat_dims = all_pcs[0].audio_feats.shape[all_pcs[0].audio_feats.ndim-1]
@@ -146,8 +148,7 @@ def corr(X, Y, type='spearman'):
 
 
 def corrs_with_null_perms(X, Y, n_perms=1000, type='spearman'):
-
-    null_rs = null_spearman_rs(X, Y, n_perms, type)
+    null_rs = null_corr_rs(X, Y, n_perms, type)
 
     r, p = corr(X, Y, type)
     r = abs(r)
@@ -176,6 +177,7 @@ def pca_fit_feats(all_pcs, n_pca_comps):
 
     return pca
 
+
 def pca_transform_feats(all_pcs, n_pca_comps, aud_feat_mat):
     # If n_pca_comps is None then don't apply PCA
     if n_pca_comps is None:
@@ -185,39 +187,3 @@ def pca_transform_feats(all_pcs, n_pca_comps, aud_feat_mat):
     pca = pca_fit_feats(all_pcs, n_pca_comps)
 
     return pca.transform(aud_feat_mat)
-
-
-# KL divergence (non-symmetric) https://stackoverflow.com/questions/26079881/kl-divergence-of-two-gmms
-def gmm_kl(gmm_p, gmm_q, n_samples=10**3):
-    X, _ = gmm_p.sample(n_samples)
-    log_p_X = gmm_p.score_samples(X)
-    log_q_X = gmm_q.score_samples(X)
-
-    return log_p_X.mean() - log_q_X.mean()
-
-# Similar to above but tweaked to give symmetric result
-def gmm_kl_symmetric(gmm_p, gmm_q, n_samples=10**3):
-    X, _ = gmm_p.sample(n_samples)
-    log_p_X = gmm_p.score_samples(X)
-    log_q_X = gmm_q.score_samples(X)
-
-    Y, _ = gmm_q.sample(n_samples)
-    log_q_Y = gmm_q.score_samples(Y)
-    log_p_Y = gmm_p.score_samples(Y)
-
-    return (log_p_X.mean() - log_q_X.mean()) + (log_q_Y.mean() - log_p_Y.mean())
-
-# Jensen Shannon divergence (symmetric) https://stackoverflow.com/questions/26079881/kl-divergence-of-two-gmms
-def gmm_js(gmm_p, gmm_q, n_samples=10**3):
-    X, _ = gmm_p.sample(n_samples)
-    log_p_X = gmm_p.score_samples(X)
-    log_q_X = gmm_q.score_samples(X)
-    log_mix_X = np.logaddexp(log_p_X, log_q_X)
-
-    Y, _ = gmm_q.sample(n_samples)
-    log_p_Y = gmm_p.score_samples(Y)
-    log_q_Y = gmm_q.score_samples(Y)
-    log_mix_Y = np.logaddexp(log_p_Y, log_q_Y)
-
-    return (log_p_X.mean() - (log_mix_X.mean() - np.log(2))
-            + log_q_Y.mean() - (log_mix_Y.mean() - np.log(2))) / 2
