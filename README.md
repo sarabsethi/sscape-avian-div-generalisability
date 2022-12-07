@@ -10,7 +10,9 @@ Additional libraries required:
 * ```tqdm```
 * ```skbio```
 
-All point count data and pre-computed acoustic features is stored on Zenodo at XXX. Download the ZIP file and unzip the contents to a directory called ```parsed_pc_data``` in this repository.
+All point count data and pre-computed acoustic features for the audio recordings are stored on Zenodo at [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7410358.svg)](https://doi.org/10.5281/zenodo.7410358)
+
+Download the ZIP file and unzip the contents to a directory called ```parsed_pc_data``` in this repository.
 
 To check that data was placed properly, run ```python parsed_pc_data_stats.py``` which will provide summary statistics on each of the datasets.
 
