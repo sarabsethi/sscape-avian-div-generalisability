@@ -12,6 +12,8 @@ Additional libraries required:
 
 All point count data and pre-computed acoustic features is stored on Zenodo at XXX. Download the ZIP file and unzip the contents to a directory called ```parsed_pc_data``` in this repository.
 
+To check that data was placed properly, run ```python parsed_pc_data_stats.py``` which will provide summary statistics on each of the datasets.
+
 ## Compute univariate correlations
 
 To compute the univariate correlations between acoustic feature vectors and species richness (and associated null correlations) run: ```python calc_corrs_with_nulls.py```. Results are saved to a directory named ```analysed_data``` as ```.npy``` files.
