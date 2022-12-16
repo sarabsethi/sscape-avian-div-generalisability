@@ -21,6 +21,8 @@ for f in all_data_fs:
         all_sites = np.asarray([pc.site for pc in all_pcs if pc.site is not None])
     num_sites = len(np.unique(all_sites))
 
+    print(np.unique(all_sites))
+
     unq_specs = get_dataset_unq_specs(all_pcs)
 
     all_dts = [pc.dt for pc in all_pcs]

@@ -6,18 +6,35 @@ from scipy.stats import pearsonr
 
 
 all_feat_types = ['vggish', 'maad']
-selected_feat_ixs = [14, 43]
+selected_feat_ixs = [14, 59]
 # 43rd soundscape index is HFC
+# 59 is ROICover
 all_feat_cols = ['blue', 'orange']
 
 parsed_data_dir = 'parsed_pc_data'
 all_datasets = ['india', 'safe', 'taiwan', 'us']
+
+analysed_data_dir = 'analysed_data'
+corr_type = 'pearson'
 
 fig, axs = plt.subplots(2, 4, sharex=True, sharey='row', figsize=(7,5))
 axs = np.ravel(axs, order='F')
 ax_ix = 0
 
 for dataset in all_datasets:
+
+    combined_null_rs = []
+    num_tests = 0
+    for f_t in all_feat_types:
+        analysed_f = os.path.join(analysed_data_dir, '{}_corr_{}_{}.npy'.format(corr_type, dataset, f_t))
+        savef, all_real_rs, all_null_rs = np.load(analysed_f, allow_pickle=True)
+        combined_null_rs.extend(all_null_rs)
+        num_tests += len(all_real_rs)
+
+    combined_null_rs = np.asarray(combined_null_rs)
+    combined_null_rs = combined_null_rs.flatten()
+    sorted_null_rs = np.sort(np.abs(combined_null_rs))
+
     for ft_ix, feat_type in enumerate(all_feat_types):
         plt.sca(axs[ax_ix])
         ax_ix += 1
@@ -40,13 +57,28 @@ for dataset in all_datasets:
             plt.ylabel(get_nice_feat_name(feat_type, cf_ix))
 
         a, b = np.polyfit(bio_divs, feat_vals, 1)
+        r, _ = pearsonr(bio_divs, feat_vals)
 
-        r, p = pearsonr(bio_divs, feat_vals)
-        print('{}, pearson r^2 = {}'.format(get_nice_feat_name(feat_type, cf_ix), r**2))
-        plt.gca().plot(bio_divs, a*bio_divs+b, c=color)
+        better_null_ixs = np.where((sorted_null_rs > np.abs(r)))[0]
+        if len(better_null_ixs) == 0: 
+            p = 0
+        else:
+            p = len(better_null_ixs)/len(sorted_null_rs) * num_tests
 
-      
-        plt.gca().text(0.95, 0.95, '$r^2$ = {}'.format(round(r**2,3)), horizontalalignment='right',verticalalignment='top',transform=plt.gca().transAxes)
+        if p < 0.001:
+            p_text = '$p$ < 0.001'
+        elif p >= 1:
+            p_text = '$p$ = 1'
+        else:
+            p_text = '$p$ = {:.3f}'.format(round(p,4))
+
+        print('{}, pearson r^2 = {}, {}'.format(get_nice_feat_name(feat_type, cf_ix), round(r**2,4), p_text))
+
+        ls = '-'
+        if p > 0.05: ls = '--'
+        plt.gca().plot(bio_divs, a*bio_divs+b, c=color, ls=ls)
+
+        plt.gca().text(0.95, 0.95, '$r^2$ = {:.3f}\n{}'.format(round(r**2,3), p_text), horizontalalignment='right',verticalalignment='top',transform=plt.gca().transAxes)
 
 fig.supxlabel('Avian richness', fontsize=14)
 fig.supylabel('Mean acoustic feature value', fontsize=14)

@@ -27,7 +27,7 @@ def get_nice_dataset_name(ugly_name):
     if 'us' in ugly_name:
         return "USA (temperate)"
     if 'india' in ugly_name:
-        return "India (sub-tropical)"
+        return "India (montane tropical)"
     if 'taiwan' in ugly_name:
         return "Taiwan (tea)"
 
@@ -53,6 +53,8 @@ def get_nice_feat_name(feat_type, feat_ix):
 
         if feat_abbrv == 'HFC':
             return 'HFC (high frequency energy)'
+        if feat_abbrv == 'ROIcover':
+            return 'Spectrogram cover %'
         else:
             return feat_abbrv
 
@@ -176,3 +178,12 @@ def pca_transform_feats(all_pcs, n_pca_comps, aud_feat_mat):
     pca = pca_fit_feats(all_pcs, n_pca_comps)
 
     return pca.transform(aud_feat_mat)
+
+
+def get_secs_per_audio_feat(feat_name):
+    target_secs_per_feat = feat_name.split('_')[-1].split('s')[0]
+    if target_secs_per_feat.startswith('0'): target_secs_per_feat = float(target_secs_per_feat)/100
+    else: target_secs_per_feat = float(target_secs_per_feat)
+
+    actual_secs_per_feat = 0.96 * int(target_secs_per_feat / 0.96)
+    return round(actual_secs_per_feat,2)

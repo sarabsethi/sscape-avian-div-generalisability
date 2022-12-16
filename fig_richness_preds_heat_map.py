@@ -94,6 +94,10 @@ plt.colorbar(cax=cax, extend='min'  ).set_label(label='Coeff. of determination (
 figs_dir = 'figures'
 if not os.path.exists(figs_dir):
     os.makedirs(figs_dir)
-plt.savefig(os.path.join(figs_dir,'fig_richness_preds_heat_map.svg'), bbox_inches='tight')
+
+savefig_name = 'fig_richness_preds_heat_map.svg'
+if feat_type == 'maad':
+    savefig_name = 'maad_' + savefig_name
+plt.savefig(os.path.join(figs_dir,savefig_name), bbox_inches='tight')
 
 plt.show()

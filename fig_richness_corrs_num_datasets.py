@@ -1,7 +1,7 @@
 import os
 import numpy as np
 import matplotlib.pyplot as plt
-from analysis_libs import get_nice_featureset_name
+from analysis_libs import get_nice_featureset_name, get_nice_feat_name
 from matplotlib.ticker import MaxNLocator
 
 all_feat_types = ['vggish', 'maad']
@@ -46,7 +46,10 @@ for feat_ix, feat_type in enumerate(all_feat_types):
         feat_sig_count[sig_ixs] += 1
 
     best_feat_ixs = np.where((feat_sig_count == np.max(feat_sig_count)))[0]
-    print('feature ixs {}, corr with {} datasets'.format(best_feat_ixs, np.max(feat_sig_count)))
+    print('{}: feature ixs {}, corr with {} datasets'.format(feat_type, best_feat_ixs, np.max(feat_sig_count)))
+
+    feat_names = [get_nice_feat_name(feat_type, ft_ix) for ft_ix in best_feat_ixs]
+    print(feat_names)
 
     for ds_ix, dataset in enumerate(all_datasets):
         analysed_f = os.path.join(analysed_data_dir, '{}_corr_{}_{}.npy'.format(corr_type, dataset, feat_type))

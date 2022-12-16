@@ -114,6 +114,11 @@ plt.tight_layout()
 figs_dir = 'figures'
 if not os.path.exists(figs_dir):
     os.makedirs(figs_dir)
-plt.savefig(os.path.join(figs_dir,'fig_pdist_corrs.svg'))
+savefig_name = 'fig_pdist_corrs.svg'
+if spec_richness:
+    savefig_name = 'richness_' + savefig_name
+if feat_type == 'maad':
+    savefig_name = 'maad_' + savefig_name
+plt.savefig(os.path.join(figs_dir, savefig_name))
 
 plt.show()

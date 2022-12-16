@@ -19,18 +19,19 @@ for ds_ix, dataset in enumerate(all_datasets):
     plt.sca(axs[ds_ix])
 
     combined_null_rs = []
+    num_tests = 0
     for f_t in all_feat_types:
         analysed_f = os.path.join(analysed_data_dir, '{}_corr_{}_{}.npy'.format(corr_type, dataset, f_t))
         savef, all_real_rs, all_null_rs = np.load(analysed_f, allow_pickle=True)
         combined_null_rs.extend(all_null_rs)
+        num_tests += len(all_real_rs)
 
     combined_null_rs = np.asarray(combined_null_rs)
     combined_null_rs = combined_null_rs.flatten()
     print(len(combined_null_rs))
 
-    aud_feat_dims = len(all_real_rs)
     sorted_null_rs = np.sort(np.abs(combined_null_rs))
-    sig_mult_hyp_corr = 1 - (0.05/aud_feat_dims)
+    sig_mult_hyp_corr = 1 - (0.05/num_tests)
     sig_ix = int(sig_mult_hyp_corr*len(sorted_null_rs))
     sig_level = sorted_null_rs[sig_ix]
     print('significant results at {}/{} (pearson\'s r={})'.format(sig_ix, len(sorted_null_rs), sig_level))
