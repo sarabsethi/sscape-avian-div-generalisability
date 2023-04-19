@@ -12,7 +12,7 @@ analysed_data_dir = 'analysed_data'
 corr_type = 'pearson'
 all_datasets = ['india', 'safe', 'taiwan', 'us']
 
-fig, axs = plt.subplots(2, 2, sharex=True, sharey=False, figsize=(7,5))
+fig, axs = plt.subplots(2, 2, sharex=True, sharey=True, figsize=(7,5))
 axs = np.ravel(axs)
 
 for ds_ix, dataset in enumerate(all_datasets):
@@ -56,7 +56,7 @@ for ds_ix, dataset in enumerate(all_datasets):
     plt.title(get_nice_dataset_name(dataset))
 
     plt.xticks([-0.6, 0, 0.6])
-    plt.yticks([])
+    #plt.yticks([])
 
 
 fig.supxlabel('Corr. with avian richnesss ({}\'s R)'.format(corr_type.capitalize()), fontsize=14)

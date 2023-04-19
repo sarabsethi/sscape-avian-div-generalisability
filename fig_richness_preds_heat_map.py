@@ -6,6 +6,7 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import r2_score
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+from scipy.stats import pearsonr 
 
 feat_type = 'vggish'
 feat_mode = 'mean'
@@ -15,8 +16,8 @@ fig = plt.figure(figsize=(6,5))
 parsed_data_dir = 'parsed_pc_data'
 parsed_data_fs = os.listdir(parsed_data_dir)
 
-parsed_data_fs = [f for f in parsed_data_fs if 'safe-' not in f and feat_type in f]
-#parsed_data_fs = parsed_data_fs[:2]
+dataset_names = ['india', 'safe', 'taiwan', 'us']
+parsed_data_fs = ['{}_{}.npy'.format(dsn, feat_type) for dsn in dataset_names]
 
 all_train_bio_divs = []
 all_test_bio_divs = []
@@ -31,6 +32,8 @@ for savef_ix, savef in enumerate(parsed_data_fs):
         aud_feat_dims = 60
     elif 'vggish' in savef:
         aud_feat_dims = 128
+    elif 'combined' in savef:
+        aud_feat_dims = 188
 
     np.random.seed(42)
 
@@ -60,6 +63,7 @@ dataset_names = [get_nice_dataset_name(n) for n in parsed_data_fs]
 dataset_short_names = [get_nice_dataset_short_name(n) for n in parsed_data_fs]
 
 all_scores = []
+samp_sizes = []
 for fit_ds_name, fit_train_aud_feat_mat, fit_train_bio_div in zip(dataset_names, all_train_aud_feat_mats, all_train_bio_divs):
     print('Fitting RF regression model to {}'.format(fit_ds_name))
 
@@ -70,15 +74,27 @@ for fit_ds_name, fit_train_aud_feat_mat, fit_train_bio_div in zip(dataset_names,
     for eval_ds_name, eval_test_aud_feat_mat, eval_test_bio_div in zip(dataset_names, all_test_aud_feat_mats, all_test_bio_divs):
         pred_bio_div = regr.predict(eval_test_aud_feat_mat)
 
-        e_score = r2_score(eval_test_bio_div, pred_bio_div, force_finite=True)
+        #e_score = r2_score(eval_test_bio_div, pred_bio_div, force_finite=True)
+        e_score = r2_score(eval_test_bio_div, pred_bio_div)
 
         print('Score on {}: {}'.format(eval_ds_name, e_score))
         eval_scores.append(e_score)
 
     all_scores.append(eval_scores)
+    samp_sizes.append(len(fit_train_bio_div))
 
 all_scores = np.vstack(all_scores)
 print(all_scores)
+
+diag_vals = np.diagonal(all_scores)
+samp_sizes = np.asarray(samp_sizes)
+wd_r, wd_p = pearsonr(diag_vals, samp_sizes)
+print('Correlation between diagonal R^2 and sample sizes (within-dataset): coeff = {}, p = {}'.format(round(wd_r, 3), round(wd_p, 3)))
+
+off_diag_vals = np.reshape(all_scores[~np.eye(all_scores.shape[0], dtype=bool)], (-1, all_scores.shape[0]-1))
+mean_off_diag_vals = np.mean(off_diag_vals, axis=1)
+cd_r, cd_p = pearsonr(mean_off_diag_vals, samp_sizes)
+print('Correlation between mean off-diagonal R^2 and sample sizes: coeff = {}, p = {}'.format(round(cd_r, 3), round(cd_p, 3)))
 
 plt.matshow(all_scores, vmin=0, vmax=1, cmap='Greys', fignum=0)
 plt.xticks(np.arange(len(dataset_short_names)), dataset_short_names)
@@ -96,8 +112,8 @@ if not os.path.exists(figs_dir):
     os.makedirs(figs_dir)
 
 savefig_name = 'fig_richness_preds_heat_map.svg'
-if feat_type == 'maad':
-    savefig_name = 'maad_' + savefig_name
+if feat_type != 'vggish':
+    savefig_name = '{}_{}'.format(feat_type, savefig_name)
 plt.savefig(os.path.join(figs_dir,savefig_name), bbox_inches='tight')
 
 plt.show()

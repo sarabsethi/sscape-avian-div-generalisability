@@ -29,7 +29,12 @@ def get_nice_dataset_name(ugly_name):
     if 'india' in ugly_name:
         return "India (montane tropical)"
     if 'taiwan' in ugly_name:
-        return "Taiwan (tea)"
+        if 'halfwindowmins' not in ugly_name:
+            return "Taiwan (tea)"
+        elif 'halfwindowmins-10' in ugly_name:
+            return "Taiwan (tea) 20 minute window"
+        elif 'halfwindowmins-20' in ugly_name:
+            return "Taiwan (tea) 40 minute window"
 
     return ugly_name
 
@@ -42,7 +47,12 @@ def get_nice_dataset_short_name(ugly_name):
     if 'india' in ugly_name:
         return "India"
     if 'taiwan' in ugly_name:
-        return "Taiwan"
+        if 'halfwindowmins' not in ugly_name:
+            return "Taiwan"
+        elif 'halfwindowmins-10' in ugly_name:
+            return "Taiwan\n(20min window)"
+        elif 'halfwindowmins-20' in ugly_name:
+            return "Taiwan\n(40min window)"
 
     return ugly_name
 
